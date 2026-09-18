@@ -6,8 +6,8 @@ public class MemberMembership
     public Guid MemberId { get; set; } // FK -> MemberDetail.ProfileId
     public Guid MembershipPlanId { get; set; }
 
-    public DateTime StartDate { get; set; }
-    public DateTime EndDate { get; set; }
+    public DateOnly StartDate { get; set; }
+    public DateOnly EndDate { get; set; }
     public MembershipStatus Status { get; set; }
 
     // Snapshot giá tại thời điểm mua, vì giá của MembershipPlan có thể đổi sau này

@@ -39,7 +39,7 @@ public class AuthService : IAuthService
     {
         var emailExists = await _db.Users.AnyAsync(u => u.Email == dto.Email);
         if (emailExists)
-            throw new AuthException("Email đã được sử dụng", 400);
+            throw ApiException.BadRequest("Email đã được sử dụng");
 
         var user = new User
         {
@@ -78,11 +78,11 @@ public class AuthService : IAuthService
         if (user == null || user.PasswordHash == null ||
             !BCrypt.Net.BCrypt.Verify(dto.Password, user.PasswordHash))
         {
-            throw new AuthException("Email hoặc mật khẩu không đúng", 401);
+            throw ApiException.Unauthorized("Email hoặc mật khẩu không đúng");
         }
 
         if (!user.IsActive)
-            throw new AuthException("Tài khoản đã bị khoá", 403);
+            throw ApiException.Forbidden("Tài khoản đã bị khoá");
 
         return await IssueTokensAsync(user);
     }
@@ -95,7 +95,7 @@ public class AuthService : IAuthService
             .FirstOrDefaultAsync(rt => rt.TokenHash == tokenHash);
 
         if (existingToken == null)
-            throw new AuthException("Refresh token không hợp lệ", 401);
+            throw ApiException.Unauthorized("Refresh token không hợp lệ");
 
         if (existingToken.IsRevoked)
         {
@@ -107,14 +107,14 @@ public class AuthService : IAuthService
             foreach (var t in activeTokens) t.RevokedAt = DateTime.UtcNow;
             await _db.SaveChangesAsync();
 
-            throw new AuthException("Refresh token đã bị thu hồi, vui lòng đăng nhập lại", 401);
+            throw ApiException.Unauthorized("Refresh token đã bị thu hồi, vui lòng đăng nhập lại");
         }
 
         if (existingToken.IsExpired)
-            throw new AuthException("Refresh token đã hết hạn, vui lòng đăng nhập lại", 401);
+            throw ApiException.Unauthorized("Refresh token đã hết hạn, vui lòng đăng nhập lại");
 
         if (!existingToken.User.IsActive)
-            throw new AuthException("Tài khoản đã bị khoá", 403);
+            throw ApiException.Forbidden("Tài khoản đã bị khoá");
 
         // Rotation: revoke token cũ, phát hành token mới
         var newRawRefreshToken = _tokenService.GenerateRefreshToken();

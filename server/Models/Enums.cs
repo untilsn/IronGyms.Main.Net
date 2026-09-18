@@ -19,7 +19,10 @@ public enum MembershipStatus
 {
     Active,
     Expired,
-    Cancelled
+    Cancelled,
+    // Thêm ở CUỐI enum, không chen vào giữa - tránh đổi giá trị số nguyên của các trạng thái
+    // đã tồn tại (EF Core lưu enum dạng int mặc định, chen vào giữa sẽ làm sai lệch data cũ).
+    PendingPayment
 }
 
 public enum CheckInMethod

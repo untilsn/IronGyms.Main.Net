@@ -12,8 +12,8 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 namespace IronGyms.Api.Migrations
 {
     [DbContext(typeof(AppDbContext))]
-    [Migration("20260903194643_InitialCreate")]
-    partial class InitialCreate
+    [Migration("20260915032242_ChangeDateFieldsToDateOnly")]
+    partial class ChangeDateFieldsToDateOnly
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -122,8 +122,8 @@ namespace IronGyms.Api.Migrations
                     b.Property<DateTime>("CreatedAt")
                         .HasColumnType("timestamp with time zone");
 
-                    b.Property<DateTime>("EndDate")
-                        .HasColumnType("timestamp with time zone");
+                    b.Property<DateOnly>("EndDate")
+                        .HasColumnType("date");
 
                     b.Property<Guid>("MemberId")
                         .HasColumnType("uuid");
@@ -134,8 +134,8 @@ namespace IronGyms.Api.Migrations
                     b.Property<decimal>("Price")
                         .HasColumnType("numeric");
 
-                    b.Property<DateTime>("StartDate")
-                        .HasColumnType("timestamp with time zone");
+                    b.Property<DateOnly>("StartDate")
+                        .HasColumnType("date");
 
                     b.Property<int>("Status")
                         .HasColumnType("integer");
@@ -364,6 +364,9 @@ namespace IronGyms.Api.Migrations
                         .ValueGeneratedOnAdd()
                         .HasColumnType("uuid");
 
+                    b.Property<string>("AddressLine")
+                        .HasColumnType("text");
+
                     b.Property<string>("AvatarPublicId")
                         .HasColumnType("text");
 
@@ -373,8 +376,11 @@ namespace IronGyms.Api.Migrations
                     b.Property<DateTime>("CreatedAt")
                         .HasColumnType("timestamp with time zone");
 
-                    b.Property<DateTime?>("DateOfBirth")
+                    b.Property<DateOnly?>("DateOfBirth")
                         .HasColumnType("date");
+
+                    b.Property<string>("District")
+                        .HasColumnType("text");
 
                     b.Property<string>("FullName")
                         .IsRequired()
@@ -386,11 +392,17 @@ namespace IronGyms.Api.Migrations
                     b.Property<string>("PhoneNumber")
                         .HasColumnType("text");
 
+                    b.Property<string>("Province")
+                        .HasColumnType("text");
+
                     b.Property<DateTime?>("UpdatedAt")
                         .HasColumnType("timestamp with time zone");
 
                     b.Property<Guid>("UserId")
                         .HasColumnType("uuid");
+
+                    b.Property<string>("Ward")
+                        .HasColumnType("text");
 
                     b.HasKey("Id");
 
@@ -437,8 +449,8 @@ namespace IronGyms.Api.Migrations
                     b.Property<Guid>("ProfileId")
                         .HasColumnType("uuid");
 
-                    b.Property<DateTime?>("HireDate")
-                        .HasColumnType("timestamp with time zone");
+                    b.Property<DateOnly?>("HireDate")
+                        .HasColumnType("date");
 
                     b.HasKey("ProfileId");
 

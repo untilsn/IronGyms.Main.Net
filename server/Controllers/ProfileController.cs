@@ -1,5 +1,4 @@
 using IronGyms.Api.DTOs;
-using IronGyms.Api.Exceptions;
 using IronGyms.Api.Extensions;
 using IronGyms.Api.Services;
 using Microsoft.AspNetCore.Authorization;
@@ -9,7 +8,7 @@ namespace IronGyms.Api.Controllers;
 
 [ApiController]
 [Route("api/profile")]
-[Authorize] // bất kỳ role nào đã đăng nhập đều gọi được, chỉ thao tác trên chính mình
+[Authorize]
 public class ProfileController : ControllerBase
 {
     private readonly IProfileService _profileService;
@@ -22,42 +21,29 @@ public class ProfileController : ControllerBase
     [HttpGet("me")]
     public async Task<IActionResult> GetMyProfile()
     {
-        try
-        {
-            var result = await _profileService.GetMyProfileAsync(User.GetUserId());
-            return Ok(result);
-        }
-        catch (AuthException ex)
-        {
-            return StatusCode(ex.StatusCode, new { message = ex.Message });
-        }
+        var result = await _profileService.GetMyProfileAsync(User.GetUserId());
+        return Ok(result);
     }
 
     [HttpPut("me")]
     public async Task<IActionResult> UpdateMyProfile([FromBody] UpdateProfileRequestDto dto)
     {
-        try
-        {
-            var result = await _profileService.UpdateProfileAsync(User.GetUserId(), dto);
-            return Ok(result);
-        }
-        catch (AuthException ex)
-        {
-            return StatusCode(ex.StatusCode, new { message = ex.Message });
-        }
+        var result = await _profileService.UpdateProfileAsync(User.GetUserId(), dto);
+        return Ok(new ApiResult<ProfileResponseDto> { Message = "Cập nhật hồ sơ thành công", Data = result });
+    }
+
+    [HttpPut("me/avatar")]
+    [Consumes("multipart/form-data")]
+    public async Task<IActionResult> UpdateAvatar(IFormFile file)
+    {
+        var result = await _profileService.UpdateAvatarAsync(User.GetUserId(), file);
+        return Ok(new ApiResult<ProfileResponseDto> { Message = "Cập nhật ảnh đại diện thành công", Data = result });
     }
 
     [HttpPut("me/change-password")]
     public async Task<IActionResult> ChangePassword([FromBody] ChangePasswordRequestDto dto)
     {
-        try
-        {
-            await _profileService.ChangePasswordAsync(User.GetUserId(), dto);
-            return Ok(new { message = "Đổi mật khẩu thành công, vui lòng đăng nhập lại trên các thiết bị khác" });
-        }
-        catch (AuthException ex)
-        {
-            return StatusCode(ex.StatusCode, new { message = ex.Message });
-        }
+        await _profileService.ChangePasswordAsync(User.GetUserId(), dto);
+        return Ok(new { message = "Đổi mật khẩu thành công, vui lòng đăng nhập lại trên các thiết bị khác" });
     }
 }

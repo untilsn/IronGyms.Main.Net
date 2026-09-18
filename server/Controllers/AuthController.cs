@@ -1,5 +1,4 @@
 using IronGyms.Api.DTOs;
-using IronGyms.Api.Exceptions;
 using IronGyms.Api.Services;
 using Microsoft.AspNetCore.Mvc;
 
@@ -11,6 +10,7 @@ public class AuthController : ControllerBase
 {
     private readonly IAuthService _authService;
     private readonly IWebHostEnvironment _env;
+
     private const string RefreshTokenCookieName = "refreshToken";
 
     public AuthController(IAuthService authService, IWebHostEnvironment env)
@@ -22,34 +22,19 @@ public class AuthController : ControllerBase
     [HttpPost("register")]
     public async Task<IActionResult> Register([FromBody] RegisterRequestDto dto)
     {
-        try
-        {
-            var result = await _authService.RegisterMemberAsync(dto);
-            SetRefreshTokenCookie(result.RefreshToken, result.RefreshTokenExpiresAt);
-            return Ok(new { accessToken = result.AccessToken, accessTokenExpiresAt = result.AccessTokenExpiresAt });
-        }
-        catch (AuthException ex)
-        {
-            return StatusCode(ex.StatusCode, new { message = ex.Message });
-        }
+        var result = await _authService.RegisterMemberAsync(dto);
+        SetRefreshTokenCookie(result.RefreshToken, result.RefreshTokenExpiresAt);
+        return Ok(new { accessToken = result.AccessToken, accessTokenExpiresAt = result.AccessTokenExpiresAt });
     }
 
     [HttpPost("login")]
     public async Task<IActionResult> Login([FromBody] LoginRequestDto dto)
     {
-        try
-        {
-            var result = await _authService.LoginAsync(dto);
-            SetRefreshTokenCookie(result.RefreshToken, result.RefreshTokenExpiresAt);
-            return Ok(new { accessToken = result.AccessToken, accessTokenExpiresAt = result.AccessTokenExpiresAt });
-        }
-        catch (AuthException ex)
-        {
-            return StatusCode(ex.StatusCode, new { message = ex.Message });
-        }
+        var result = await _authService.LoginAsync(dto);
+        SetRefreshTokenCookie(result.RefreshToken, result.RefreshTokenExpiresAt);
+        return Ok(new { accessToken = result.AccessToken, accessTokenExpiresAt = result.AccessTokenExpiresAt });
     }
 
-    // Không nhận refreshToken từ body nữa - đọc trực tiếp từ cookie mà trình duyệt/Postman tự gửi lên.
     [HttpPost("refresh")]
     public async Task<IActionResult> Refresh()
     {
@@ -57,16 +42,9 @@ public class AuthController : ControllerBase
         if (string.IsNullOrEmpty(rawRefreshToken))
             return Unauthorized(new { message = "Không tìm thấy refresh token" });
 
-        try
-        {
-            var result = await _authService.RefreshAsync(rawRefreshToken);
-            SetRefreshTokenCookie(result.RefreshToken, result.RefreshTokenExpiresAt);
-            return Ok(new { accessToken = result.AccessToken, accessTokenExpiresAt = result.AccessTokenExpiresAt });
-        }
-        catch (AuthException ex)
-        {
-            return StatusCode(ex.StatusCode, new { message = ex.Message });
-        }
+        var result = await _authService.RefreshAsync(rawRefreshToken);
+        SetRefreshTokenCookie(result.RefreshToken, result.RefreshTokenExpiresAt);
+        return Ok(new { accessToken = result.AccessToken, accessTokenExpiresAt = result.AccessTokenExpiresAt });
     }
 
     [HttpPost("logout")]
@@ -84,11 +62,11 @@ public class AuthController : ControllerBase
     {
         Response.Cookies.Append(RefreshTokenCookieName, rawRefreshToken, new CookieOptions
         {
-            HttpOnly = true,                 // JS không đọc được, kể cả qua XSS
-            Secure = !_env.IsDevelopment(),  // localhost http vẫn gửi được nếu để false lúc dev
-            SameSite = SameSiteMode.Lax,     // localhost:3000 và localhost:5000 vẫn tính là "same site"
+            HttpOnly = true,
+            Secure = !_env.IsDevelopment(),
+            SameSite = SameSiteMode.Lax,
             Expires = expiresAt,
-            Path = "/api/auth"               // chỉ gửi cookie này khi gọi đúng nhóm route /api/auth/*
+            Path = "/api/auth"
         });
     }
 }

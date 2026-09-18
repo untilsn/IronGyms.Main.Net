@@ -11,7 +11,7 @@ public class Profile
     public string FullName { get; set; } = null!;
     public string? PhoneNumber { get; set; }
     public Gender? Gender { get; set; }
-    public DateTime? DateOfBirth { get; set; }
+    public DateOnly? DateOfBirth { get; set; }
     public string? AddressLine { get; set; }
     public string? Ward { get; set; }
     public string? District { get; set; }

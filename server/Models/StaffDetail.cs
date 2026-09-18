@@ -5,7 +5,7 @@ public class StaffDetail
 {
     public Guid ProfileId { get; set; }
 
-    public DateTime? HireDate { get; set; }
+    public DateOnly? HireDate { get; set; }
 
     public Profile Profile { get; set; } = null!;
     public ICollection<CheckIn> ManualCheckIns { get; set; } = new List<CheckIn>();

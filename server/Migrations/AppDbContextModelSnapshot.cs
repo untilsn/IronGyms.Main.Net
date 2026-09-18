@@ -119,8 +119,8 @@ namespace IronGyms.Api.Migrations
                     b.Property<DateTime>("CreatedAt")
                         .HasColumnType("timestamp with time zone");
 
-                    b.Property<DateTime>("EndDate")
-                        .HasColumnType("timestamp with time zone");
+                    b.Property<DateOnly>("EndDate")
+                        .HasColumnType("date");
 
                     b.Property<Guid>("MemberId")
                         .HasColumnType("uuid");
@@ -131,8 +131,8 @@ namespace IronGyms.Api.Migrations
                     b.Property<decimal>("Price")
                         .HasColumnType("numeric");
 
-                    b.Property<DateTime>("StartDate")
-                        .HasColumnType("timestamp with time zone");
+                    b.Property<DateOnly>("StartDate")
+                        .HasColumnType("date");
 
                     b.Property<int>("Status")
                         .HasColumnType("integer");
@@ -373,8 +373,8 @@ namespace IronGyms.Api.Migrations
                     b.Property<DateTime>("CreatedAt")
                         .HasColumnType("timestamp with time zone");
 
-                    b.Property<DateTime?>("DateOfBirth")
-                        .HasColumnType("timestamp with time zone");
+                    b.Property<DateOnly?>("DateOfBirth")
+                        .HasColumnType("date");
 
                     b.Property<string>("District")
                         .HasColumnType("text");
@@ -446,8 +446,8 @@ namespace IronGyms.Api.Migrations
                     b.Property<Guid>("ProfileId")
                         .HasColumnType("uuid");
 
-                    b.Property<DateTime?>("HireDate")
-                        .HasColumnType("timestamp with time zone");
+                    b.Property<DateOnly?>("HireDate")
+                        .HasColumnType("date");
 
                     b.HasKey("ProfileId");
 
