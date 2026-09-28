@@ -2,6 +2,7 @@ using IronGyms.Api.Data;
 using IronGyms.Api.DTOs;
 using IronGyms.Api.Exceptions;
 using IronGyms.Api.Models;
+using IronGyms.Api.Services.Payments;
 using Microsoft.EntityFrameworkCore;
 
 namespace IronGyms.Api.Services;
@@ -17,10 +18,12 @@ public interface IMemberMembershipService
 public class MemberMembershipService : IMemberMembershipService
 {
     private readonly AppDbContext _db;
+    private readonly IPayPalClient _payPalClient;
 
-    public MemberMembershipService(AppDbContext db)
+    public MemberMembershipService(AppDbContext db, IPayPalClient payPalClient)
     {
         _db = db;
+        _payPalClient = payPalClient;
     }
 
     public async Task<MemberMembershipResponseDto> PurchaseAsync(Guid userId, PurchaseMembershipRequestDto dto)
@@ -32,10 +35,22 @@ public class MemberMembershipService : IMemberMembershipService
             throw ApiException.NotFound("Không tìm thấy gói tập");
 
         var today = DateOnly.FromDateTime(DateTime.UtcNow);
+        var membershipId = Guid.NewGuid();
+
+        // Gọi PayPal TRƯỚC khi lưu DB - nếu PayPal lỗi thì không tạo record rác nào cả.
+        string? providerTransactionId = null;
+        string? approvalUrl = null;
+
+        if (dto.Method == PaymentMethod.PayPal)
+        {
+            var (orderId, url) = await _payPalClient.CreateOrderAsync(plan.Price, membershipId.ToString());
+            providerTransactionId = orderId;
+            approvalUrl = url;
+        }
 
         var membership = new MemberMembership
         {
-            Id = Guid.NewGuid(),
+            Id = membershipId,
             MemberId = memberId,
             MembershipPlanId = plan.Id,
             StartDate = today,
@@ -50,15 +65,18 @@ public class MemberMembershipService : IMemberMembershipService
             For = PaymentFor.Membership,
             MemberMembershipId = membership.Id,
             Amount = plan.Price,
-            Method = PaymentMethod.Cod,
-            Status = PaymentStatus.Pending
+            Method = dto.Method,
+            Status = PaymentStatus.Pending,
+            ProviderTransactionId = providerTransactionId
         };
 
         _db.MemberMemberships.Add(membership);
         _db.Payments.Add(payment);
         await _db.SaveChangesAsync();
 
-        return ToDto(membership, plan, payment);
+        var result = ToDto(membership, plan, payment);
+        result.PaypalApprovalUrl = approvalUrl;
+        return result;
     }
 
     public async Task<List<MemberMembershipResponseDto>> GetMyMembershipsAsync(Guid userId)

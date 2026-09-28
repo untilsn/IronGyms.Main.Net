@@ -11,6 +11,7 @@ public class PaymentResponseDto
     public decimal Amount { get; set; }
     public PaymentMethod Method { get; set; }
     public PaymentStatus Status { get; set; }
+    public string? ProviderTransactionId { get; set; }
     public DateTime? PaidAt { get; set; }
     public DateTime CreatedAt { get; set; }
 }

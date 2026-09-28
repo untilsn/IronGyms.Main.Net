@@ -3,6 +3,7 @@ using IronGyms.Api.Configuration;
 using IronGyms.Api.Data;
 using IronGyms.Api.Middleware;
 using IronGyms.Api.Services;
+using IronGyms.Api.Services.Payments;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
@@ -32,7 +33,14 @@ builder.Services.AddCors(options =>
 });
 
 // Controllers
-builder.Services.AddControllers();
+// Cho phép gửi/nhận enum dạng chữ ("PayPal") thay vì chỉ chấp nhận số (1) - áp dụng cho
+// TOÀN BỘ enum trong project (PaymentMethod, Gender, MembershipStatus...), dễ đọc/dễ test hơn nhiều.
+builder.Services.AddControllers()
+    .AddJsonOptions(options =>
+    {
+        options.JsonSerializerOptions.Converters.Add(
+            new System.Text.Json.Serialization.JsonStringEnumConverter());
+    });
 
 // Swagger
 builder.Services.AddEndpointsApiExplorer();
@@ -73,7 +81,15 @@ builder.Services.Configure<CloudinaryOptions>(
     builder.Configuration.GetSection(CloudinaryOptions.SectionName)
 );
 
+builder.Services.Configure<PayPalOptions>(
+    builder.Configuration.GetSection(PayPalOptions.SectionName)
+);
+
 builder.Services.AddScoped<ICloudinaryService, CloudinaryService>();
+
+// AddHttpClient thay vì "new HttpClient()" trực tiếp - tránh lỗi socket exhaustion khi gọi
+// PayPal nhiều lần, và tự đăng ký luôn IPayPalClient vào DI container.
+builder.Services.AddHttpClient<IPayPalClient, PayPalClient>();
 
 // Application Services
 builder.Services.AddScoped<ITokenService, TokenService>();

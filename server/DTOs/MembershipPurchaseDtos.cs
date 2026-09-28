@@ -5,6 +5,7 @@ namespace IronGyms.Api.DTOs;
 public class PurchaseMembershipRequestDto
 {
     public Guid MembershipPlanId { get; set; }
+    public PaymentMethod Method { get; set; } = PaymentMethod.Cod;
 }
 
 public class PaymentSummaryDto
@@ -26,6 +27,9 @@ public class MemberMembershipResponseDto
     public MembershipStatus Status { get; set; }
     public decimal Price { get; set; }
     public DateTime CreatedAt { get; set; }
+
+    // Chỉ có giá trị ngay sau khi mua bằng PayPal - client cần redirect sang đây để khách duyệt thanh toán.
+    public string? PaypalApprovalUrl { get; set; }
 
     // Payment gần nhất gắn với gói này - null chỉ xảy ra nếu dữ liệu bất thường,
     // vì luồng mua luôn tạo Payment cùng lúc với MemberMembership.
